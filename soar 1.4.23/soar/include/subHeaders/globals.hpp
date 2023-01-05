@@ -27,4 +27,4 @@ extern pros::ADIDigitalIn limit;
 extern pros::Imu gyro;
 
 //nonConstructor
-externs int autonIntakePower;
+extern int autonIntakePower;

@@ -1,7 +1,7 @@
 #include "main.h" 
 
 // define motors
-pros::Motor catapult(20, pros::E_MOTOR_GEAR_600, true, pros::E_MOTOR_ENCODER_COUNTS);
+pros::Motor catapult(20, pros::E_MOTOR_GEAR_600, false, pros::E_MOTOR_ENCODER_COUNTS);
 pros::Motor intake(11, pros::E_MOTOR_GEAR_600, true, pros::E_MOTOR_ENCODER_COUNTS);
 
 //lefts
@@ -21,9 +21,11 @@ pros::Motor_Group rightDrive ({rBack, rMid, rFront});
 pros::Controller cece(pros::E_CONTROLLER_MASTER);
 
 // define misc
-pros::ADIDigitalIn limit (1);
+pros::ADIDigitalIn limit ('A');
 
 //pros::ADIDigitalOut endgame(');
+//pros::ADIDigitalOut boosters(');
+//pros::ADIDigitalOut boostersA(');
 
 pros::Imu gyro(8);
 

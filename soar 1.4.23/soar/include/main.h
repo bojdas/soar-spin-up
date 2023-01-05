@@ -79,9 +79,8 @@ void opcontrol(void);
 //#include <iostream> 
 #include "subHeaders/drive.hpp"
 #include "subHeaders/globals.hpp"
-#include "subHeaders/flywheel.hpp"
+#include "subHeaders/catapult.hpp"
 #include "subHeaders/intake.hpp"
-#include "subHeaders/endgame.hpp"
 #include "subHeaders/autons.hpp"
 #endif
 

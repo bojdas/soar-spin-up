@@ -2,8 +2,12 @@
 #include "main.h"
 #include "pros/rtos.hpp"
 
+//helpers
+void setCata(int pwr); 
+
 // driver control funcs
 void setCataMotor();
+
 //void cataPID(int pos, int driveCAP);
 void reload();
 void launch();

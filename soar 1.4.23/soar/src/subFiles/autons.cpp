@@ -1,7 +1,7 @@
 #include "main.h"
 #include "pros/rtos.hpp"
 #include "subHeaders/drive.hpp"
-#include "subHeaders/flywheel.hpp"
+#include "subHeaders/catapult.hpp"
 #include "subHeaders/globals.hpp"
 #include "subHeaders/intake.hpp"
 
@@ -12,22 +12,23 @@ double tkP=0.3, tkI=0, tkD=1, rkP=1, rkI=0, rkD=0;
 
 void drivePID(int dist, int angle, int driveCAP) {
     //transform shennanigans
-    int tError = 0;
-    int tPrevError = 0;
-    int tDerivative = 0;
-    int tIntegral = 0;
+    double tError = 0;
+    double tPrevError = 0;
+    double tDerivative = 0;
+    double tIntegral = 0;
 
     //goofy rotate
-    int rError = 0;
-    int rPrevError = 0;
-    int rDerivative = 0;
-    int rIntegral = 0;
+    double  rError = 0;
+    double rPrevError = 0;
+    double  rDerivative = 0;
+    double rIntegral = 0;
+
     gyro.tare();
     resetEncoders();
-    while((gyro.get_rotation() < angle - 1 || gyro.get_rotation() > angle + 1) &&
-    (avgEncoderValue() < dist - 12 || avgEncoderValue() > dist + 12)){
+
+    while(fabs(rError) > 2 && fabs(tError) > 1*12.5008973483){ //PID runs as long as angle is 2 deg away from desired and dist is 1/100th a tile away from desired 
         //transform
-        tError = dist * 12.1 - avgEncoderValue();
+        tError = dist * 12.5008973483 - avgEncoderValue();
         tDerivative = tError - tPrevError;
         tIntegral += tError;
         if ((tError == 0)  || (tError > dist))  tIntegral = 0;
@@ -51,7 +52,7 @@ void drivePID(int dist, int angle, int driveCAP) {
         if(dist == 0) {
             setDrive(rotate, -rotate);
         } else if(angle == 0) {
-            setDrive(transform, transform);
+            setDrive((int) transform, (int) transform);
         } else {
         setDrive((int)transform + (int)rotate, (int)transform - (int) rotate);
         }
@@ -60,8 +61,7 @@ void drivePID(int dist, int angle, int driveCAP) {
         if(!limit.get_value()) catapult = 127;
 
         //setting intake AND roller
-        intake = autonIntakePower;
-
+        setIntake(autonIntakePower);
         //setting prev errors
         tPrevError = tError;
         rPrevError = rError;
@@ -83,6 +83,7 @@ void skills(){
     drivePID(-5,0,127);
     //ROLLER
     drivePID(80,90,127); //dunno transform
+    reload();
     drivePID(-250,0,60);
 
     //ROLLER
@@ -91,20 +92,22 @@ void skills(){
 
     drivePID(300,0,127);
     drivePID(0,0,127); //dunno angle
-    //shoot
+    launch();
     drivePID(0,0,127); //dunno angle
 
 
 //----------------------pick up lowgoal barrier discs & shoot---------------------------------
     drivePID(0,-90,127);
+    reload();
     drivePID(-110,0,60);
     drivePID(110,0,127);
     drivePID(0,0,127); //dunno angle
-    //shoot
+    launch();
     drivePID(0,0,127); //dunno angle
 
 //---------------pick up 1 disc and line up for other two--------------------------
     drivePID(0,0,127); //dunno angle
+    reload();
     drivePID(-150,0,127); //dunno dist
     drivePID(-50,0,60); //dunno dist
     drivePID(25,0,127);
@@ -115,18 +118,20 @@ void skills(){
     drivePID(20,0,127);
     drivePID(0,90,127);
     drivePID(0,0,127); //dunno dist
-    //shoot
+    launch();
     drivePID(-0,0,127); //dunno dist
     drivePID(0,-90,127);
   
   //-------------------------------getting 3 stack, shooting, & aligning w roller---------------------
     drivePID(-121,0,127); //this line and the following add up to abt sqrt(2)
+    reload();
     drivePID(-161,0,50);
     drivePID(0,45,127);
     drivePID(250,0,127);
-    //shoot
+    launch();
     drivePID(-250,0,127); 
     drivePID(0,-90,127);
+    reload();
 }
 
 void skillsRoutingTest(){

@@ -1,5 +1,6 @@
 #include "main.h"
 #include "subHeaders/autons.hpp"
+#include "subHeaders/catapult.hpp"
 #include "subHeaders/drive.hpp"
 #include "subHeaders/globals.hpp"
 #include <string>
@@ -15,7 +16,7 @@ void initialize() {
     lFront.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
     rBack.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
     rFront.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
-    flywheel.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
+    catapult.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
     lMid.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
     intake.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
     rMid.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
@@ -61,8 +62,8 @@ void competition_initialize() {
  */
 void autonomous() {
     int init = pros::millis();
-    drivePID(200, 0, 127);
-    drivePID(0, 90, 60);
+    //drivePID(200, 0, 127);
+    //drivePID(0, 90, 60);
 
     // leftAuto();
     //rightAuto();
@@ -102,6 +103,7 @@ void autonomous() {
         case 7:
             break;
         case 8: {
+            reload();
             break;
         }
         default:
@@ -124,13 +126,31 @@ void autonomous() {
  * task, not resume it from where it left off.
  */
 void opcontrol() {
+    int startTime = pros::millis();
+    bool autoReload = true;
 	while(true){
         if(cece.get_digital(pros::E_CONTROLLER_DIGITAL_UP)){
-            endgame.set_value(true);
+         //   endgame.set_value(true);
+         cece.rumble(".");
         }
         if(cece.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN)){
-            endgame.set_value(false);
+         //   boosters.set_value(false);
+         cece.rumble(".");
         }
+        if(cece.get_digital(pros::E_CONTROLLER_DIGITAL_A)  && (pros::millis()-startTime)%200==0){
+            if(autoReload) {
+                autoReload = false;
+                cece.rumble("...");
+            } else {
+                autoReload = true;
+                cece.rumble("..");
+            }
+        }
+        if(limit.get_value() && autoReload)  {
+            setCata(127);
+        }
+      cece.print(0, 0, "limiter: %d", limit.get_value());
+      cece.print(1, 0, "autoReload: %d", autoReload);
 
         //td: drive code
         setDriveMotors();

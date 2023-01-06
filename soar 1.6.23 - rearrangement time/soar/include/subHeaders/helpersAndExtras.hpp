@@ -3,3 +3,4 @@
 
 double trial(int i, bool side);
 void Mapping(int i, bool side);
+int slewRate();

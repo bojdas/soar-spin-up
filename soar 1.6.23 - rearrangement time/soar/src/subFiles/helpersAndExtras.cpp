@@ -3,6 +3,56 @@
 #include "subHeaders/globals.hpp"
 #include "subHeaders/setMotors.hpp"
 
+int joystickMap[128] = {
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+};
+//helpers
+void setDrive(int left, int right){
+    if(left > 127) left = 127;
+    if(right > 127) right = 127;
+    if(left < -127) left = -127;
+    if(right < -127) right = -127;
+
+    //left = joystickMap[left];
+    //right = joystickMap[right];
+
+    leftDrive = left;
+    rightDrive = right;
+}
+
+void resetEncoders(){
+    lBack.tare_position();
+    lFront.tare_position();
+    lMid.tare_position();
+    rMid.tare_position();
+    rBack.tare_position();
+    rFront.tare_position();
+}
+
+double avgEncoderValue(){
+    return (fabs(lBack.get_position())
+            + fabs(lFront.get_position()) 
+            + fabs(lMid.get_position())
+            + fabs(rMid.get_position())
+            + fabs(rBack.get_position()) 
+            + fabs(rFront.get_position())) / 6;
+}
+
 double trial(int i, bool side) {
     double rpm = 0;
     if(side) {

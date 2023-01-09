@@ -2,7 +2,7 @@
 #include "main.h"
 
 //auton
-void drivePID(int dist, int angle, int driveCAP);
+void drivePID(int dist, int angle, int driveCAP, int timeout);
 void reload();
 void launch();
 //paths

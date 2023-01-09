@@ -9,7 +9,7 @@
 double tkP=0.3, tkI=0, tkD=1, rkP=1, rkI=0, rkD=0;
 
 
-void drivePID(int dist, int angle, int driveCAP) {
+void drivePID(int dist, int angle, int driveCAP, int timeout) {
     //transform shennanigans
     int start = pros::millis();
     double tError = 0;
@@ -67,7 +67,7 @@ void drivePID(int dist, int angle, int driveCAP) {
         rPrevError = rError;
         cece.print(0, 0, "error: %f", tError);
         pros::delay(20);
-    }while(fabs(rError) > 2 && fabs(tError) > 0.5*12.5008973483 && start-pros::millis()%750);
+    }while(fabs(rError) > 2 && fabs(tError) > 0.5*12.5008973483 && (start-pros::millis())%750 && (pros::millis()-start) < timeout);
     setDrive(0, 0);
 }
 
@@ -84,16 +84,8 @@ void launch(bool boosters) {
     while((limit.get_value() == 1)) {
    catapult = 90;
     }
-    if(boosters) {
-        boosterL.set_value(true);
-        boosterR.set_value(true);
-    }
    catapult = 0;
    pros::delay(500);
-    if(boosters) {
-        boosterL.set_value(false);
-        boosterR.set_value(false);
-    }
     cece.rumble(".");
 }
 

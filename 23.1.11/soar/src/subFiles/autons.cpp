@@ -1,5 +1,6 @@
 #include "main.h"
 #include "pros/rtos.hpp"
+#include "subHeaders/autons.hpp"
 #include "subHeaders/globals.hpp"
 #include "subHeaders/helpersAndExtras.hpp"
 #include <cmath>
@@ -7,33 +8,32 @@
 //note: one inch for drive is equal to 52.0870722846 encoder ticks
 
 //-----------------------AUTON FUNCTIONS-----------------------------------------
-void distPID(int dist, int driveCAP) {
+void distPID(int dist, int driveCAP, int timeout) {
     //transform shennanigans
     int start = pros::millis();
     double error = 0;
     double prevError = 0;
     double derivative = 0;
     double integral = 0;
-    double exitOffset = 200;
+    double settle = 0;
 
-    double kP=0.3, kI=0, kD=1;
+    double kP=0.3, kI=0, kD=2;
     resetEncoders();
 
-    do{ //PID runs until within 1 degree and within 1/4 inch
-        //transform
+    do{ //PID runs until within 1/4 inch
         error = dist * 12.6008973483 - avgEncoderValue();
         derivative = error - prevError;
         integral += error;
-        if ((error == 0)  || (error > dist))  integral = 0;
-        double transform =error * kP + derivative * kD + integral * kI;
-
-        cece.print(0, 0, "dist error: %f", error);
+        if ((error == 0)  || (error > dist) || integral > error)  integral = 0;
+        double transform = error * kP + derivative * kD + integral * kI;
+        cece.print(0, 0, "settle: %f", settle);
 
         if(transform > driveCAP) transform = driveCAP;
         if(transform < -driveCAP) transform = -driveCAP;
-        if(transform < 15 && transform > 2) transform = 15;
-        if(transform > -15 && transform < - 2) transform = 15;
-         setDrive((int)transform, (int)transform);
+        if(transform < 15 && transform > 0) transform = 15;
+        if(transform > -15 && transform < 0) transform = -15;
+        //set drive
+        setDrive((int)transform, (int)transform);
 
         //setting reload for cata
         if(limit.get_value() == 0) {
@@ -47,16 +47,16 @@ void distPID(int dist, int driveCAP) {
 
         //setting prev errors
         prevError = error;
-
         //timeout
-        if(pros::millis()-start > 6500) {
+        if(pros::millis()-start > timeout) {
             break;
         }
         pros::delay(20);
-        if(pros::millis()%1000==0) {
-            exitOffset = error;
+        if(fabs(error) > 52.0870722846/4) {
+            settle++;
         }
-    }while(fabs(exitOffset) > 52.0870722846/4);
+    }while(fabs(error) > 52.0870722846/4);
+    cece.print(0, 0, "tError: %f", settle);
     cece.rumble(".");
     setDrive(0, 0);
     catapult = 0;
@@ -69,31 +69,28 @@ void turnPID(int angle, int driveCAP) {
     double prevError = 0;
     double derivative = 0;
     double integral = 0;
-    double exitOffset = 200;
 
-    double kP= 2, kI=0, kD=7;
+    double kP=1, kI=0, kD=6;
+    double exitOffset = 100;
     gyro.tare_rotation();
-    
-    if(angle != 0) {
-        angle = (int)((double) angle * 0.98);
-        angle += gyro.get_rotation();
-    }
-    do{ //PID runs until within 1 degree and within 1/4 inch
-        //transform
-        error = angle  - gyro.get_heading();
+
+    if(angle != 0)
+        angle = angle + gyro.get_rotation();
+
+    do{ //PID runs until within 2 degrees
+        error = angle - gyro.get_rotation();
         derivative = error - prevError;
         integral += error;
         if ((error == 0)  || (error > angle))  integral = 0;
-        double rotate =error * kP + derivative * kD + integral * kI;
-
-        cece.print(0, 0, "angle error: %f", error);
+        double rotate = error * kP + derivative * kD + integral * kI;
+        cece.print(0, 0, "rError: %f", error);
 
         if(rotate > driveCAP) rotate = driveCAP;
         if(rotate < -driveCAP) rotate = -driveCAP;
-        if(rotate < 15 && rotate > 2) rotate = 15;
-        if(rotate > -15 && rotate < - 2) rotate = 15;
-
-         setDrive((int)rotate, (int)rotate);
+        if(rotate < 20 && rotate > 0) rotate = 20;
+        if(rotate > -20 && rotate < 0) rotate = -20;
+        //set drive
+        setDrive((int)rotate, (int)-rotate);
 
         //setting reload for cata
         if(limit.get_value() == 0) {
@@ -107,16 +104,15 @@ void turnPID(int angle, int driveCAP) {
 
         //setting prev errors
         prevError = error;
-
         //timeout
-        if(pros::millis()-start > 6500) {
+        if(pros::millis()-start > 4500) {
             break;
         }
-        pros::delay(20);
-        if(pros::millis()%1000==0) {
+        pros::delay(5);
+        if(((int)(pros::millis()-start))%500==0) {
             exitOffset = error;
         }
-    }while(fabs(exitOffset) > 1);
+    }while(fabs(exitOffset) > 2);
     cece.rumble(".");
     setDrive(0, 0);
     catapult = 0;
@@ -141,11 +137,9 @@ void drivePID(int dist, int angle, int driveCAP) {
     gyro.tare_rotation();
     resetEncoders();
 
+    if(angle != 0)
+        angle = angle + gyro.get_rotation();
 
-    if(angle != 0) {
-        angle = (int)((double) angle * 0.98);
-        angle += gyro.get_rotation();
-    }
     do{ //PID runs until within 1 degree and within 1/4 inch
         //transform
         tError = dist * 12.6008973483 - avgEncoderValue();
@@ -197,11 +191,11 @@ void drivePID(int dist, int angle, int driveCAP) {
             break;
         }
         pros::delay(20);
-        if(pros::millis()%1000==0) {
+        if(((int)(pros::millis()-start))%1000==0) {
             rExitOffset = rError;
             tExitOffset = tError;
         }
-    }while(fabs(rExitOffset) > 1 || fabs(tExitOffset) > 52.0870722846/4);
+    }while(fabs(rExitOffset) > 1 || fabs(rExitOffset) > 52.0870722846/4);
 
     cece.rumble(".");
     cece.print(0, 0, "rError: %f", rError);
@@ -227,15 +221,105 @@ void launch() {
 
 //-----------------------AUTON PATHS-----------------------------------------
 
-void leftAuto(){
-    drivePID(100, 0, 127);
-    cece.rumble("---");
-}
-
 void rightAuto(){
+    /*distPID(102, 100, 4500);
+    pros::delay(200);
+    //angles
+    //launch();
+    turnPID(-62, 127);
+    autonIntakePower = -127;
+    distPID(-90, 120, 4500);
+    distPID(-35, 40, 4500);
+    pros::delay(125);
+    autonIntakePower = 0;
+    distPID(10, 90, 4500);
+    turnPID(155, 90);*/
 
+    /*distPID(90, 120, 2000);
+    turnPID(-90, 120);
+    setDrive(-40, -40);
+    pros::delay(1000);
+    intake = -127;
+    pros::delay(130);
+    intake = 0;
+    distPID(15, 100, 4500);
+    turnPID(130, 120);
+    reload();
+    intake = -40;
+    distPID(-121, 127, 3000);
+    intake = 0;
+    reload();*/
+
+
+    /*pros::delay(150);
+    //autonIntakePower = 127;
+    distPID(-151, 80);
+    distPID(-10, 40);
+    distPID(10, 120);
+    //autonIntakePower = 0;
+    turnPID(-100, 127); // dunno angle
+    autonIntakePower = 127; //ensuring discs are in
+    pros::delay(500);
+    autonIntakePower = 0;
+    //launch();
+    pros::delay(100);
+    turnPID(105, 127); // dunno angle
+    reload();
+    autonIntakePower = 127;
+    distPID(-141, 80);
+    distPID(20, 120);
+    turnPID(-90, 120);
+    distPID(-10, 127);
+    //launch();
+    autonIntakePower = 0;
+
+    cece.rumble("---");*/
+    distPID(160, 100, 3000);
+    launch();
+    turnPID(-70, 100);
+    distPID(-160, 100, 4000);
+    reload();
 }
 
+void leftAuto(){
+    setDrive(-40, -40);
+    pros::delay(1000);
+    intake = -127;
+    pros::delay(130);
+    intake = 0;
+    distPID(15, 100, 4500);
+    turnPID(-140, 120);
+    reload();
+    intake = -40;
+    distPID(-121, 127, 3000);
+    intake = 0;
+    reload();
+    /*autonIntakePower = 127;
+    distPID(-141, 60);
+    pros::delay(500);
+    autonIntakePower = 0;
+    turnPID(75, 120);
+    //launch();
+    */
+}
+void newSkills() {
+    setDrive(-40, -40);
+    pros::delay(1000);
+    intake = -127;
+    pros::delay(230);
+    intake = 0;
+    distPID(10, 100, 4500);
+    turnPID(120, 120);
+    intake = 127;
+    distPID(-138, 70, 4500);
+    intake = 0;
+    turnPID(-45, 100);
+    setDrive(-40, -40);
+    pros::delay(1000);
+    intake = -127;
+    pros::delay(230);
+    intake = 0;
+}
 void skills(){
 //-------------------------FIRST 2 ROLLERS AND ONE SHOT---------------------------------------------
     drivePID(-5,0,127);

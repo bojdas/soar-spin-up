@@ -23,7 +23,7 @@ pros::Controller cece(pros::E_CONTROLLER_MASTER);
 // define misc
 pros::ADIDigitalIn limit ('A');
 
-pros::ADIDigitalOut endgame('E');
+pros::ADIDigitalOut endgame('C');
 pros::ADIDigitalOut boosters('B');
 
 pros::Imu gyro(8);

@@ -1,5 +1,6 @@
 #pragma once
 #include "main.h"
+#include "pros/adi.hpp"
 
 
 // motors
@@ -21,8 +22,8 @@ extern pros::Controller cece;
 
 // misc
 extern pros::ADIDigitalIn limit;
+extern pros:: ADIDigitalOut boosters;
 extern pros::ADIDigitalOut endgame;
-extern pros::ADIDigitalOut boosters;
 extern pros::Imu gyro;
 
 //nonConstructor

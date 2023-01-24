@@ -1,4 +1,6 @@
 #include "main.h"
+#include "pros/misc.h"
+#include "pros/rtos.hpp"
 #include "subHeaders/autons.hpp"
 #include "subHeaders/globals.hpp"
 #include "subHeaders/helpersAndExtras.hpp"
@@ -20,11 +22,14 @@ void initialize() {
     intake.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
     rMid.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
 
+    boosters.set_value(false);
+    endgame.set_value(false);
+
     gyro.reset();
 
     pros::delay(2000);
 
-    selector::init();
+   // selector::init();
 
 }
 
@@ -61,69 +66,60 @@ void competition_initialize() {
  */
 void autonomous() {
     int init = pros::millis();
-    //drivePID(200, 0, 127);
-    //drivePID(0, 90, 60);
-
-    // leftAuto();
-    //rightAuto();
-    // skills();
+    rightAuto();
+    /*
     switch(selector::auton) {
         // left Autons
         case -1: {
-            trial(116, true);
+            //leftAuto();
             break;
             }
         case -2: {
-            trial(117, true);
+           // leftAuto();
             break;
             }
         case -3: {
-            trial(118, true);
             break;
             }
         case -4: {
-            trial(119, true);
             break;
             }
 
         // right Autons
         case 1: {
-            trial(120, true);
+           // rightAuto();
             break;
             }
         case 2: {
-            trial(121, true);
+           // rightAuto();
             break;
             }
         case 3: {
-            trial(122, true);
             break;
             }
         case 4: {
-            trial(123, true);
             break;
             }
 
         //skills
         case 5:  {
-            trial(124, true);
+           // newSkills();
             break;
             }
         case 6: {
-            trial(125, true);
             break;
             }
         case 7: {
-            trial(126, true);
             break;
             }
         case 8: {
-            leftAuto();
+           // leftAuto();
             break;
             }
         default:
             break;
 }
+*/
     init = pros::millis() - init;
 }
 
@@ -143,10 +139,19 @@ void autonomous() {
 void opcontrol() {
     int startTime = pros::millis();
     bool autoReload = true;
+    bool boostersState = false;
+    bool expansionState = false;
 	while(true){
-        if(cece.get_digital(pros::E_CONTROLLER_DIGITAL_LEFT) && cece.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN)){
-            endgame.set_value(false);
-            cece.rumble(".");
+        if(cece.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_UP)){
+            if(expansionState) {
+                endgame.set_value(false);
+                expansionState = false;
+                cece.rumble("....");
+            } else {
+                endgame.set_value(true);
+                expansionState = true;
+                cece.rumble("...");
+            }
         }
         if(cece.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A)){
             if(autoReload) {
@@ -157,9 +162,21 @@ void opcontrol() {
                 cece.rumble("-..");
             }
         }
+        if (cece.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_X)) {
+            if(boostersState) {
+                boosters.set_value(false);
+                boostersState = false;
+                cece.rumble(".-");
+            } else {
+                boosters.set_value(true);
+                boostersState = true;
+                cece.rumble(".--");
+            }
+        }
         if(limit.get_new_press() == 1) {
             cece.rumble("-");
         }
+        cece.print(0, 0, "X left: %f", cece.get_analog(ANALOG_RIGHT_X));
         // motors lmfao
         setDriveMotors();
         setIntakeMotors();

@@ -1,5 +1,7 @@
 #include "main.h"
+#include "pros/misc.h"
 #include "subHeaders/globals.hpp"
+#include "subHeaders/helpersAndExtras.hpp"
 
 // setMotors
 void setCataMotor(bool autoReload) {
@@ -13,7 +15,7 @@ void setCataMotor(bool autoReload) {
     if(autoReload && (limit.get_value() == 0)) {
         power = 127;
     }
-   catapult = power;
+   catapult = power; 
 }
 
 void setIntakeMotors(){
@@ -42,4 +44,32 @@ void setDriveMotors(){
     }
 
     setDrive(power + 0.85*turn, power - 0.85*turn); // arcade drive
+}
+
+void goofyControls(){
+    int left = 0, right = 0, intakePowerGoof = 0;
+    if(cece.get_digital(pros::E_CONTROLLER_DIGITAL_R2)) {
+        left = 127;
+    }
+    if(cece.get_digital(pros::E_CONTROLLER_DIGITAL_R1)) {
+        right = 127;
+    }
+    if(cece.get_digital(pros::E_CONTROLLER_DIGITAL_L2)) {
+        right = -127;
+    }
+    if(cece.get_digital(pros::E_CONTROLLER_DIGITAL_L1)) {
+        left = -127;
+    }
+    intakePowerGoof = cece.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_X);
+    if(abs(cece.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y)) > 50 && limit.get_value() == 1) {
+        catapult = 127;
+    } else {
+        catapult = 0;
+    }
+    if(abs(cece.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X)) > 50 && limit.get_value() == 0) {
+        catapult = 127;
+    } else {
+        catapult = 0;
+    }
+    setDrive(left, right);
 }

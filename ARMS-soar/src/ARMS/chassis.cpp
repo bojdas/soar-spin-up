@@ -7,6 +7,9 @@
 
 namespace arms::chassis {
 
+pros::Motor catapult(20, pros::E_MOTOR_GEAR_600, false, pros::E_MOTOR_ENCODER_COUNTS);
+pros::ADIDigitalIn limit ('A');
+
 // chassis motors
 std::shared_ptr<pros::Motor_Group> leftMotors;
 std::shared_ptr<pros::Motor_Group> rightMotors;
@@ -116,19 +119,36 @@ void waitUntilFinished(double exit_error, double seconds) {
 	switch (pid::mode) {
 	case TRANSLATIONAL:
 		while (odom::getDistanceError(pid::pointTarget) > exit_error &&  !settled() && seconds > (pros::millis()-init)) {
+			if(limit != 1) {
+				catapult = 127;
+			} else {
+				catapult = 0;
+			}
 			pros::delay(10);
 		}
 
 		// if doing a pose movement, make sure we are at the target theta
 		if (pid::angularTarget != 361) {
-			while (fabs(odom::getHeading() - pid::angularTarget) > exit_error &&  !settled() && seconds > (pros::millis()-init))
+			while (fabs(odom::getHeading() - pid::angularTarget) > exit_error &&  !settled() && seconds > (pros::millis()-init)) {
+				if(limit != 1) {
+					catapult = 127;
+				} else {
+					catapult = 0;
+				}
 				pros::delay(10);
+			}
 		}
 
 		break;
 	case ANGULAR:
-		while (fabs(odom::getHeading() - pid::angularTarget) > exit_error &&  !settled() && seconds > (pros::millis()-init))
+		while (fabs(odom::getHeading() - pid::angularTarget) > exit_error &&  !settled() && seconds > (pros::millis()-init)) {
+			if(limit != 1) {
+				catapult = 127;
+			} else {
+				catapult = 0;
+			}
 			pros::delay(10);
+		}
 		break;
 	}
 }
@@ -177,29 +197,29 @@ void move(std::vector<double> target, double max, double exit_error, double lp, 
 }
 
 void move(std::vector<double> target, double max, double exit_error, double seconds, MoveFlags flags) {
-	move(target, max, exit_error, -1, -1, flags);
+	move(target, max, exit_error, -1, -1, seconds, flags);
 }
 
 void move(std::vector<double> target, double max, double seconds, MoveFlags flags) {
-	move(target, max, linear_exit_error, -1, -1, flags);
+	move(target, max, linear_exit_error, -1, -1, seconds, flags);
 }
 
 void move(std::vector<double> target, double seconds, MoveFlags flags) {
-	move(target, 100, linear_exit_error, -1, -1, flags);
+	move(target, 100, linear_exit_error, -1, -1, seconds, flags);
 }
 
 /**************************************************/
 // 1D movement
 void move(double target, double max, double exit_error, double seconds, MoveFlags flags) {
-	move({target, 0}, max, exit_error, -1, -1, flags | RELATIVE);
+	move({target, 0}, max, exit_error, -1, -1, seconds, flags | RELATIVE);
 }
 
 void move(double target, double max, double seconds, MoveFlags flags) {
-	move({target, 0}, max, linear_exit_error, -1, -1, flags | RELATIVE);
+	move({target, 0}, max, linear_exit_error, -1, -1, seconds, flags | RELATIVE);
 }
 
 void move(double target, double seconds, MoveFlags flags) {
-	move({target, 0}, 100, linear_exit_error, -1, -1, flags | RELATIVE);
+	move({target, 0}, 100, linear_exit_error, -1, -1, seconds, flags | RELATIVE);
 }
 
 /**************************************************/

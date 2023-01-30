@@ -194,6 +194,7 @@ void move(std::vector<double> target, double max, double exit_error, double lp, 
 		if (!(flags & THRU))
 			chassis::setBrakeMode(pros::E_MOTOR_BRAKE_BRAKE);
 	}
+	catapult = 0;
 }
 
 void move(std::vector<double> target, double max, double exit_error, double seconds, MoveFlags flags) {
@@ -253,6 +254,7 @@ void turn(double target, double max, double exit_error, double ap, double second
 		if (!(flags & THRU))
 			chassis::setBrakeMode(pros::E_MOTOR_BRAKE_BRAKE);
 	}
+	catapult = 0;
 }
 
 void turn(double target, double max, double exit_error, double seconds, MoveFlags flags) {

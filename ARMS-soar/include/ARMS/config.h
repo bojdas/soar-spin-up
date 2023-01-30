@@ -17,7 +17,7 @@ namespace arms {
 
 // Ticks per inch
 #define TPI 52.0870722846      			  // Encoder ticks per inch of forward robot movement
-#define MIDDLE_TPI 0          // Ticks per inch for the middle wheel
+#define MIDDLE_TPI 1          // Ticks per inch for the middle wheel
 
 // Tracking wheel distances
 #define TRACK_WIDTH 0 		  // The distance between left and right wheels (or tracker wheels)
@@ -30,20 +30,20 @@ namespace arms {
 #define ENCODER_TYPE arms::odom::ENCODER_ADI // The type of encoders
 
 // Movement tuning
-#define SLEW_STEP 8          // Smaller number = more slew
-#define LINEAR_EXIT_ERROR 0.5  // default exit distance for linear movements
-#define ANGULAR_EXIT_ERROR 0.5 // default exit distance for angular movements
+#define SLEW_STEP 3          // Smaller number = more slew
+#define LINEAR_EXIT_ERROR 1  // default exit distance for linear movements
+#define ANGULAR_EXIT_ERROR 1 // default exit distance for angular movements
 #define SETTLE_THRESH_LINEAR .5      // amount of linear movement for settling
 #define SETTLE_THRESH_ANGULAR 1      // amount of angular movement for settling
-#define SETTLE_TIME 200      // amount of time to count as settled
-#define LINEAR_KP 0.3
+#define SETTLE_TIME 250      // amount of time to count as settled
+#define LINEAR_KP 7.8
 #define LINEAR_KI 0
-#define LINEAR_KD 2
+#define LINEAR_KD 1.5
 #define TRACKING_KP 60		 // point tracking turning strength
-#define ANGULAR_KP 1.5
-#define ANGULAR_KI 0
+#define ANGULAR_KP .9
+#define ANGULAR_KI 0.007
 #define ANGULAR_KD 4
-#define MIN_ERROR 0.25          // Minimum distance to target before angular component is disabled
+#define MIN_ERROR 5          // Minimum distance to target before angular componenet is disabled
 #define LEAD_PCT .6			 // Go-to-pose lead distance ratio (0-1)
 
 // Auton selector configuration constants

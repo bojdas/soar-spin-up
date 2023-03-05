@@ -71,6 +71,7 @@ int odomTask() {
 	position.x = 0;
 	position.y = 0;
 	heading = 0;
+	int debugRate = 0;
 
 	while (true) {
 		// get positions of each encoder
@@ -121,10 +122,11 @@ int odomTask() {
 		position.x += cos(p) * local_x - sin(p) * local_y;
 		position.y += cos(p) * local_y + sin(p) * local_x;
 
-		if (debug)
-			printf("%.2f, %.2f, %.2f \n", position.x, position.y, getHeading());
+		if (debug && (debugRate%50==0))
+			printf("x: %.2f, y: %.2f, theta: %.2f \n", position.x, position.y, getHeading());
 
 		pros::delay(10);
+		debugRate++;
 	}
 }
 
